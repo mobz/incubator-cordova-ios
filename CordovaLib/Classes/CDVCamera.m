@@ -53,19 +53,10 @@
 
 //        bool allowEdit = [[options valueForKey:@"allowEdit"] boolValue];
 
-        CDVSizingMethod sizingMethod = SizingMethodContain;
-				NSString* sizingMethodString = [arguments objectAtIndex:3];
-				if ( sizingMethodString != nil)
-				{
-					sizingMethod = (CDVSizingMethod)[sizingMethodString intValue];
-				}
-				
         NSNumber* targetWidth = [arguments objectAtIndex:4];
         NSNumber* targetHeight = [arguments objectAtIndex:5];
         NSNumber* mediaValue = [options valueForKey:@"mediaType"];
         CDVMediaType mediaType = (mediaValue) ? [mediaValue intValue] : MediaTypePicture;
-
-     		NSLog(@"TakePicture %f %f", [targetWidth floatValue], [targetHeight floatValue]);
 
         CGSize targetSize = CGSizeMake(0, 0);
         if (targetWidth != nil && targetHeight != nil) {
@@ -83,7 +74,7 @@
         //self.pickerController.allowsEditing = allowEdit; // THIS IS ALL IT TAKES FOR CROPPING - jm
         self.pickerController.callbackId = callbackId;
         self.pickerController.targetSize = targetSize;
-        self.pickerController.sizingMethod = sizingMethod;
+        self.pickerController.sizingMethod = ([arguments objectAtIndex:7]) ? [[arguments objectAtIndex:7] intValue ] : SizingMethodContain;
         self.pickerController.correctOrientation = [[options valueForKey:@"correctOrientation"] boolValue];
         self.pickerController.saveToPhotoAlbum = [[options valueForKey:@"saveToPhotoAlbum"] boolValue];
         
@@ -382,7 +373,6 @@
     CGFloat scaleFactor = 0.0;
     CGSize	scaledSize = frameSize;
     
-		NSLog(@"ImageByScalingNotCroping. %f", targetWidth);
     if (CGSizeEqualToSize(imageSize, frameSize) == NO) 
     {
         CGFloat widthFactor = targetWidth / width;
@@ -395,7 +385,6 @@
             scaleFactor = widthFactor; // scale to fit width
         scaledSize = CGSizeMake(width * scaleFactor, height * scaleFactor);
     }
-		NSLog(@"Using scaledFactor %f", scaleFactor);
     
     UIGraphicsBeginImageContext(scaledSize); // this will resize
     
