@@ -50,13 +50,23 @@
         [self writeJavascript:[result toErrorCallbackString:callbackId]];
         
 	} else {
-        bool allowEdit = [[options valueForKey:@"allowEdit"] boolValue];
-        bool preventCrop = [[options valueForKey:@"preventCrop"] boolValue];
-        NSNumber* targetWidth = [options valueForKey:@"targetWidth"];
-        NSNumber* targetHeight = [options valueForKey:@"targetHeight"];
+
+//        bool allowEdit = [[options valueForKey:@"allowEdit"] boolValue];
+
+        CDVSizingMethod sizingMethod = SizingMethodContain;
+				NSString* sizingMethodString = [arguments objectAtIndex:3];
+				if ( sizingMethodString != nil)
+				{
+					sizingMethod = (CDVSizingMethod)[sizingMethodString intValue];
+				}
+				
+        NSNumber* targetWidth = [arguments objectAtIndex:4];
+        NSNumber* targetHeight = [arguments objectAtIndex:5];
         NSNumber* mediaValue = [options valueForKey:@"mediaType"];
         CDVMediaType mediaType = (mediaValue) ? [mediaValue intValue] : MediaTypePicture;
-        
+
+     		NSLog(@"TakePicture %f %f", [targetWidth floatValue], [targetHeight floatValue]);
+
         CGSize targetSize = CGSizeMake(0, 0);
         if (targetWidth != nil && targetHeight != nil) {
             targetSize = CGSizeMake([targetWidth floatValue], [targetHeight floatValue]);
@@ -73,7 +83,7 @@
         //self.pickerController.allowsEditing = allowEdit; // THIS IS ALL IT TAKES FOR CROPPING - jm
         self.pickerController.callbackId = callbackId;
         self.pickerController.targetSize = targetSize;
-        self.pickerController.preventCropping = preventCrop;
+        self.pickerController.sizingMethod = sizingMethod;
         self.pickerController.correctOrientation = [[options valueForKey:@"correctOrientation"] boolValue];
         self.pickerController.saveToPhotoAlbum = [[options valueForKey:@"saveToPhotoAlbum"] boolValue];
         
@@ -170,9 +180,9 @@
     
     if (self.pickerController.targetSize.width > 0 && self.pickerController.targetSize.height > 0) {
         // if preventCropping, resize image to fit within targetSize without cropping
-        if(self.pickerController.preventCropping) {
+        if(self.pickerController.sizingMethod == SizingMethodContain) {
             scaledImage = [self imageByScalingNotCroppingForSize:image toSize:self.pickerController.targetSize];
-        } else {
+        } else if(self.pickerController.sizingMethod == SizingMethodCover) {
             scaledImage = [self imageByScalingAndCroppingForSize:image toSize:self.pickerController.targetSize];
         }
     }
@@ -372,6 +382,7 @@
     CGFloat scaleFactor = 0.0;
     CGSize	scaledSize = frameSize;
     
+		NSLog(@"ImageByScalingNotCroping. %f", targetWidth);
     if (CGSizeEqualToSize(imageSize, frameSize) == NO) 
     {
         CGFloat widthFactor = targetWidth / width;
@@ -384,6 +395,7 @@
             scaleFactor = widthFactor; // scale to fit width
         scaledSize = CGSizeMake(width * scaleFactor, height * scaleFactor);
     }
+		NSLog(@"Using scaledFactor %f", scaleFactor);
     
     UIGraphicsBeginImageContext(scaledSize); // this will resize
     
@@ -459,7 +471,7 @@
 @synthesize correctOrientation;
 @synthesize saveToPhotoAlbum;
 @synthesize encodingType;
-@synthesize preventCropping;
+@synthesize sizingMethod;
 
 
 - (void) dealloc
