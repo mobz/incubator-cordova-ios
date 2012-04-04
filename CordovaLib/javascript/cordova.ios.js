@@ -1029,10 +1029,16 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
     if (typeof options.encodingType == "number") {
         encodingType = options.encodingType;
     }
+
+    var sizingMethod = Camera.ResizingMethod.CONTAIN;
+    if (typeof options.sizingMethod == "number") {
+        sizingMethod = options.sizingMethod;
+    }
+
     // TODO: parse MediaType
     // TODO: enable allow edit?
 
-    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType]);
+    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, sizingMethod]);
 }
 
 module.exports = cameraExport;
@@ -1059,6 +1065,10 @@ module.exports = {
     PHOTOLIBRARY : 0,    // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
     CAMERA : 1,          // Take picture from camera
     SAVEDPHOTOALBUM : 2  // Choose image from picture library (same as PHOTOLIBRARY for Android)
+  },
+  ResizingMethod:{       // the ResizingMethod uses the same resizing algorithm as css3 background-size rule
+    CONTAIN : 0,         // Scale the image, while preserving its intrinsic aspect ratio, to the largest size such that both its width and its height can fit inside the targetHeight/Width
+    COVER : 1            // Scale the image, while preserving its intrinsic aspect ratio, to the smallest size such that both its width and its height can completely cover the targetHeight/Width
   }
 };
 
