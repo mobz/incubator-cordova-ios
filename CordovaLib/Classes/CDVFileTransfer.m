@@ -51,6 +51,13 @@
 //  NSString* trustAllHosts = (NSString*)[arguments objectAtIndex:6]; // allow self-signed certs
 //  NSString* chunkedMode = (NSString*)[arguments objectAtIndex:7]; // currently unused
     
+		NSLog(@"filePath %@", filePath);
+		NSLog(@"server %@", server);
+		NSLog(@"fileKey %@", fileKey);
+		NSLog(@"fileName %@", fileName);
+		NSLog(@"mimeType %@", mimeType);
+
+
     NSMutableDictionary* params = options;
     
     CDVPluginResult* result = nil;
@@ -76,6 +83,7 @@
         errorCode = FILE_NOT_FOUND_ERR;
         NSLog(@"File Transfer Error: Invalid file path or URL");
     } else {
+			NSLog(@"have url and file");
         // check that file is valid
         NSFileManager* fileMgr = [[NSFileManager alloc] init];
         BOOL bIsDirectory = NO;
@@ -95,24 +103,30 @@
     }
     
     if(errorCode > 0) {
+		NSLog(@"With error");
         //result = [PluginResult resultWithStatus: CDVCommandStatus_OK messageAsInt: INVALID_URL_ERR cast: @"navigator.fileTransfer._castTransferError"];
         
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary: [self createFileTransferError:[NSString stringWithFormat:@"%d", errorCode] AndSource:filePath AndTarget:server]];
+				NSLog(@"With error result");
         
         [self writeJavascript:[result toErrorCallbackString:callbackId]];
+				NSLog(@"after writing javascript result");
         return;
     }
     
+	NSLog(@"Create request");
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url];
 	[req setHTTPMethod:@"POST"];
 	
 //    Magic value to set a cookie
+NSLog(@"Setting cookie");
 	if([params objectForKey:@"__cookie"]) {
 		[req setValue:[params objectForKey:@"__cookie"] forHTTPHeaderField:@"Cookie"];
 		[params removeObjectForKey:@"__cookie"];
 		[req setHTTPShouldHandleCookies:NO];
 	}
 	
+	NSLog(@"Setting headers");
 	NSString *boundary = @"*****org.apache.cordova.formBoundary";
     
 	NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", boundary];
@@ -125,7 +139,10 @@
 	}
 
     
+		NSLog(@"Setting body");
 	NSMutableData *postBody = [NSMutableData data];
+	
+	NSLog(@"adding params");
 	
 	NSEnumerator *enumerator = [params keyEnumerator];
 	id key;
@@ -153,16 +170,17 @@
     
 	[postBody appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
 	[postBody appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\n", fileKey, fileName] dataUsingEncoding:NSUTF8StringEncoding]];
-    [postBody appendData:[[NSString stringWithFormat:@"Content-Type: %@\r\n\r\n", mimeType] dataUsingEncoding:NSUTF8StringEncoding]];
+    [postBody appendData:[[NSString stringWithFormat:@"Content-Type: %@\r\n", mimeType] dataUsingEncoding:NSUTF8StringEncoding]];
     [postBody appendData:[[NSString stringWithFormat:@"Content-Length: %d\r\n\r\n", [fileData length]] dataUsingEncoding:NSUTF8StringEncoding]];
 
-    DLog(@"fileData length: %d", [fileData length]);
+    NSLog(@"fileData length: %d", [fileData length]);
 	[postBody appendData:fileData];
 	[postBody appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
     
     //[req setValue:[[NSNumber numberWithInteger:[postBody length]] stringValue] forHTTPHeaderField:@"Content-Length"];
 	[req setHTTPBody:postBody];
     
+		NSLog(@"assigning delegate %@", callbackId);
 	
 	CDVFileTransferDelegate* delegate = [[[CDVFileTransferDelegate alloc] init] autorelease];
 	delegate.command = self;
@@ -171,6 +189,8 @@
     delegate.target = filePath;
 	
 	[NSURLConnection connectionWithRequest:req delegate:delegate];
+	
+	NSLog(@"Complete");
     
 }
 
