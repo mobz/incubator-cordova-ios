@@ -31,7 +31,21 @@
 	return ( NSClassFromString(@"UIPopoverController") != nil) && 
 	(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad);
 }
-
+/*  takePicture arguments:
+ * INDEX   ARGUMENT
+ *  0       callbackId
+ *  1       quality
+ *  2       destination type
+ *  3       source type
+ *  4       targetWidth
+ *  5       targetHeight
+ *  6       encodingType
+ *  7       mediaType
+ *  8       allowsEdit
+ *  9       correctOrientation
+ *  10      saveToPhotoAlbum
+ *  11	    sizingMethod
+ */
 - (void) takePicture:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
 {
 	NSString* callbackId = [arguments objectAtIndex:0];
@@ -50,12 +64,10 @@
         [self writeJavascript:[result toErrorCallbackString:callbackId]];
         
 	} else {
-
-//        bool allowEdit = [[options valueForKey:@"allowEdit"] boolValue];
-
+        bool allowEdit = [[arguments objectAtIndex:8] boolValue];
         NSNumber* targetWidth = [arguments objectAtIndex:4];
         NSNumber* targetHeight = [arguments objectAtIndex:5];
-        NSNumber* mediaValue = [options valueForKey:@"mediaType"];
+        NSNumber* mediaValue = [arguments objectAtIndex:7];
         CDVMediaType mediaType = (mediaValue) ? [mediaValue intValue] : MediaTypePicture;
 
         CGSize targetSize = CGSizeMake(0, 0);
@@ -71,12 +83,12 @@
         
         self.pickerController.delegate = self;
         self.pickerController.sourceType = sourceType;
-        //self.pickerController.allowsEditing = allowEdit; // THIS IS ALL IT TAKES FOR CROPPING - jm
+        self.pickerController.allowsEditing = allowEdit; // THIS IS ALL IT TAKES FOR CROPPING - jm
         self.pickerController.callbackId = callbackId;
         self.pickerController.targetSize = targetSize;
-        self.pickerController.sizingMethod = ([arguments objectAtIndex:7]) ? [[arguments objectAtIndex:7] intValue ] : SizingMethodContain;
-        self.pickerController.correctOrientation = [[options valueForKey:@"correctOrientation"] boolValue];
-        self.pickerController.saveToPhotoAlbum = [[options valueForKey:@"saveToPhotoAlbum"] boolValue];
+        self.pickerController.sizingMethod = ([arguments objectAtIndex:11]) ? [[arguments objectAtIndex:11] intValue ] : SizingMethodContain;
+        self.pickerController.correctOrientation = [[arguments objectAtIndex:9] boolValue];
+        self.pickerController.saveToPhotoAlbum = [[arguments objectAtIndex:10] boolValue];
         
         self.pickerController.encodingType = ([arguments objectAtIndex:6]) ? [[arguments objectAtIndex:6] intValue] : EncodingTypeJPEG;
         
