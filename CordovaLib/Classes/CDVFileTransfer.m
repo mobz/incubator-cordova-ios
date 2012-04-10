@@ -248,7 +248,7 @@
     BOOL bDirRequest = NO;
     CDVFile * file;
     
-    if(self.direction == CDV_TRANSFER_UPLOAD)
+    if(direction == CDV_TRANSFER_UPLOAD)
     {
         // create dictionary to return FileUploadResult object
         uploadResponse = [[NSString alloc] initWithData:self.responseData encoding:NSUTF8StringEncoding];
@@ -260,13 +260,13 @@
         [uploadResult setObject:[NSNull null] forKey: @"responseCode"];
         result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDictionary: uploadResult cast: @"navigator.fileTransfer._castUploadResult"];
     }
-    if(self.direction == CDV_TRANSFER_DOWNLOAD)
+    if(direction == CDV_TRANSFER_DOWNLOAD)
     {
         DLog(@"Write file %@", target);
         error=[[[NSError alloc]init] autorelease];
-        NSLog(@"File Transfer Finished with response code %d", self.responseCode);
+        NSLog(@"File Transfer Finished with response code %d", responseCode);
 
-        if(self.responseCode >= 200 && self.responseCode < 300)
+        if(responseCode >= 200 && responseCode < 300)
         {
             @try {
                 parentPath = [ self.target stringByDeletingLastPathComponent ];
@@ -295,26 +295,26 @@
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary: [command createFileTransferError:[NSString stringWithFormat:@"%d", CONNECTION_ERR] AndSource:source AndTarget:target]];
         }
     }
-    [self.command writeJavascript:[result toSuccessCallbackString: callbackId]];
+    [command writeJavascript:[result toSuccessCallbackString: callbackId]];
     [uploadResponse release];
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-    self.responseCode = [httpResponse statusCode];
+    responseCode = [response statusCode];
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error 
 {
     CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDictionary: [command createFileTransferError: [NSString stringWithFormat: @"%d", CONNECTION_ERR] AndSource:source AndTarget:target]];
     NSLog(@"File Transfer Error: %@", [error localizedDescription]);
-    [self.command writeJavascript:[result toErrorCallbackString: callbackId]];
+    [command writeJavascript:[result toErrorCallbackString: callbackId]];
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
-    [self.responseData appendData:data];
+    [responseData appendData:data];
 }
 - (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 {
@@ -357,12 +357,9 @@
 
 - (void) dealloc
 {
-    self.callbackId = nil;
-    self.responseData = nil;
-    self.command = nil;
-    self.source = nil;
-    self.target = nil;
-
+    [callbackId release];
+	[responseData release];
+	[command release];
     [super dealloc];
 }
 
