@@ -21,8 +21,21 @@
 #import "CDVFile.h"
 #import "CDVDebug.h"
 
-@implementation CDVFileTransfer
+// filePath, server, fileKey, fileName, mimeType, params, trustAllHosts, chunkedMode
 
+@implementation CDVFileTransfer
+/*  upload arguments:
+ * INDEX   ARGUMENT
+ *  0       callbackId
+ *  1       filePath
+ *  2       server
+ *  3       fileKey
+ *  4       fileName
+ *  5       mimeType
+ *  6       params
+ *  7       trustAllHosts
+ *  8       chunkedMode
+ */
 - (void) upload:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options {
     NSString* callbackId = [arguments objectAtIndex:0];
     
